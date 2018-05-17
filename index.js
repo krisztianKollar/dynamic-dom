@@ -12,15 +12,15 @@ function createPostsList(posts) {
         const post = posts[i];
       
         // creating paragraph
-        const strongEl = document.createElement('strong'); //<button></button>
-        strongEl.textContent = post.title;  //<button>Lorem ipsum</button>
+        const strongEl = document.createElement('strong'); 
+        strongEl.textContent = post.title;  
         strongEl.addEventListener("click", onLoadComments);
-        strongEl.id = post.id;    //<button id='2'>Lorem ipsum</button>
+        strongEl.id = post.id;    
         const pEl = document.createElement('p');
         pEl.appendChild(strongEl);
         pEl.appendChild(document.createTextNode(`: ${post.body}`));
-        const comments = document.createElement("div"); //<div></div>
-        comments.id = "comment" + post.id;  //<div id='comment2'></div>
+        const comments = document.createElement("div"); 
+        comments.id = "comment" + post.id;  
         
         
 
@@ -169,8 +169,8 @@ function createCommentsList() {
         const comment = comments[i];
 
         // creating paragraph
-        const strongEl = document.createElement('strong'); //<strong></strong>
-        strongEl.innerHTML = comment.email + ":<br>"; //<strong>email</strong>
+        const strongEl = document.createElement('strong'); 
+        strongEl.innerHTML = comment.email + ":<br>"; 
 
         const pEl = document.createElement('p');
         pEl.appendChild(strongEl);
