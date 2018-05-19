@@ -20,25 +20,19 @@ function createPostsList(posts) {
         pEl.appendChild(strongEl);
         pEl.appendChild(document.createTextNode(`: ${post.body}`));
         const comments = document.createElement("div"); 
-        comments.id = "comment" + post.id;  
-        
-        
+        comments.id = "comment" + post.id;       
 
         // creating list item
         const liEl = document.createElement('li');
         liEl.appendChild(pEl);
-        liEl.appendChild(comments);
-      
-        
-
+        liEl.appendChild(comments);   
         ulEl.appendChild(liEl);
     }
-
     return ulEl;
 }
 
 function onPostsReceived() {
-    postsDivEl.style.display = 'block';
+    showContents(["posts"]);
 
     const text = this.responseText;
     const posts = JSON.parse(text);
@@ -95,13 +89,21 @@ function createUsersTableBody(users) {
         buttonEl.setAttributeNode(dataUserIdAttr);
         buttonEl.addEventListener('click', onLoadPosts);
 
+        const buttonAEl = document.createElement('button');
+        buttonAEl.textContent = "albums";
+        buttonAEl.id = user.id;
+        buttonAEl.addEventListener('click', onLoadAlbums);
+
+        
         const nameTdEl = document.createElement('td');
         nameTdEl.appendChild(buttonEl);
-
+        const albumTdEl = document.createElement('td');
+        albumTdEl.appendChild(buttonAEl);
         // creating row
         const trEl = document.createElement('tr');
         trEl.appendChild(idTdEl);
         trEl.appendChild(nameTdEl);
+        trEl.appendChild(albumTdEl);
 
         tbodyEl.appendChild(trEl);
     }
@@ -181,27 +183,27 @@ function createCommentsList() {
         liEl.appendChild(pEl);
 
         ulEl.appendChild(liEl);
-        const divWeAppendTo = document.getElementById("comment" + comment.postId);
-        divWeAppendTo.appendChild(ulEl);
+        commentsDiv.appendChild(ulEl);
     }
 }
-
     
 }
 
 function createAlbumsList(albums) {
     const ulEl = document.createElement('ul');
 
-    for (let i = 0; i < posts.length; i++) {
-        const post = posts[i];
+    for (let i = 0; i < albums.length; i++) {
+        const album = albums[i];
 
         // creating paragraph
-        const strongEl = document.createElement('strong');
-        strongEl.textContent = album.title;
+        const strongEl = document.createElement('strong'); 
+        strongEl.innerHTML = album.title; 
+        strongEl.id = album.id; 
+        strongEl.addEventListener("click", onLoadPhotos)
 
         const pEl = document.createElement('p');
+        pEl.id = "album" + album.id;
         pEl.appendChild(strongEl);
-        pEl.appendChild(document.createTextNode(`: ${album.body}`));
 
         // creating list item
         const liEl = document.createElement('li');
@@ -209,16 +211,46 @@ function createAlbumsList(albums) {
 
         ulEl.appendChild(liEl);
     }
-
     return ulEl;
 }
 
-function onAlbumssReceived() {
-    postsDivEl.style.display = 'block';
+function onLoadPhotos() {
+    
+    const albumId = this.getAttribute('id');
+
+    const xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', createPhotosList);
+    xhr.open('GET', BASE_URL + '/photos?albumId=' + albumId);
+    xhr.send();
+}
+
+function createPhotosList() {
 
     const text = this.responseText;
-    const albums = JSON.parse(text);
+    const photos = JSON.parse(text);
+    const ulEl = document.createElement('ul');
+    const photosDiv = document.getElementById("album" + photos[0].albumId);
+   if (photosDiv.firstChild.nextSibling){
+       while (photosDiv.firstChild.nextSibling) {
+        photosDiv.removeChild(photosDiv.firstChild.nextSibling);
+       }
+   } else {
+        photosDiv.appendChild(document.createElement("br"))
+        for (let i = 0; i < photos.length; i++) {
+            const photo = photos[i];
 
+            // creating paragraph
+            const imgEl = document.createElement('img'); 
+            imgEl.src = photo.thumbnailUrl; 
+            photosDiv.appendChild(imgEl);
+        }
+}
+}
+
+function onAlbumsReceived() {
+    showContents(["albums"]);
+    const text = this.responseText;
+    const albums = JSON.parse(text);
     const divEl = document.getElementById('albums-content');
     while (divEl.firstChild) {
         divEl.removeChild(divEl.firstChild);
@@ -228,12 +260,24 @@ function onAlbumssReceived() {
 
 function onLoadAlbums() {
     const el = this;
-    const userId = el.getAttribute('data-user-id');
+    const userId = el.getAttribute('id');
 
     const xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', onPostsReceived);
+    xhr.addEventListener('load', onAlbumsReceived);
     xhr.open('GET', BASE_URL + '/albums?userId=' + userId);
     xhr.send();
+}
+
+function showContents(ids) {
+    const contentEls = document.getElementsByClassName('content');
+    for (let i = 0; i < contentEls.length; i++) {
+        const contentEl = contentEls[i];
+        if (ids.includes(contentEl.id)) {
+            contentEl.classList.remove('hidden');
+        } else {
+            contentEl.classList.add('hidden');
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
